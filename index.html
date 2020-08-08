@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="author" content="">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+<div class='calculator'>
+
+    <div class = 'display'>
+        <div>Enter here...</div>
+    </div>
+
+    <div class = 'buttonBoard'>
+
+        <div class = buttons>
+            <button class='numberButton' id='0'>0</button>
+            <button class='numberButton' id='1'>1</button>
+            <button class='numberButton' id='2'>2</button>
+            <button class='numberButton' id='3'>3</button>
+            <button class='numberButton' id='4'>4</button>
+            <button class='numberButton' id='5'>5</button>
+            <button class='numberButton' id='6'>6</button>
+            <button class='numberButton' id='7'>7</button>
+            <button class='numberButton' id='8'>8</button>
+            <button class='numberButton' id='9'>9</button>
+            
+            <button class='operatorButton' id='+'>+</button>
+            <button class='operatorButton' id='-'>-</button>
+            <button class='operatorButton' id='*'>x</button>
+            <button class='operatorButton' id='/'>/</button>
+
+            <button class='equalsButton'>=</button>
+
+            <button class='clearButton'>clear</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+<style>
+
+button:focus{
+    outline: none;
+}
+
+body {
+    background-color:darkcyan;
+}
+
+.calculator {
+    width: 510px;
+    margin: 0 auto;
+}
+
+.display {
+    height: 140px;
+    width: 500px;
+    border: solid 5px #bbb;
+    border-radius: 10px;
+    background-color: #bdd;
+}
+
+.display>div {
+    font-size: 30px;
+    width: 250px;
+    height: 50px;
+    text-align: right;
+    vertical-align: center;
+    line-height: 50px;
+    padding-right: 10px;
+    border: solid 1px black;
+    border-radius: 5px;
+    margin: 10% auto;
+    background-color: #eee;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    overflow: hidden;
+}
+
+.buttonBoard {
+    position: relative;
+    width: 500px;
+    height: 600px;
+    border: solid 5px #bbb;
+    border-radius: 10px;
+    border-top: none;
+    background-color: #999;
+}
+
+.buttons {
+    position: absolute;
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+}
+
+button {
+    border: none;
+    box-shadow: 2px 2px 5px black;
+    border-radius: 7px;
+    background-color: #bdd;
+    font-size: 30px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    transition: all 2s;
+}
+
+.buttonClick {
+    box-shadow: inset -3px -3px 5px black;
+    border-radius: 7px;
+    background-color: #bdd;
+    font-size: 30px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+</style>
+
+<script>
+
+//global variables
+let fullNumber;
+let result = false;
+let display = document.querySelector('.display>div')
+
+let calculator = {
+    numberClicks1: [],
+    numberClicks2: [],
+    operator: '',
+}
+
+//functions
+function numberClick() {
+    if (display.textContent == 'Enter here...') {display.textContent = ''};
+    //starts new number if number pressed after result of operation
+    if (result == true) {
+        calculator.numberClicks1 = [];
+        calculator.numberClicks1.push(this.id);
+        display.textContent = calculator.numberClicks1.slice(-1).join('');
+        result = false;
+    }
+    else if (calculator.operator == '') {
+        calculator.numberClicks1.push(this.id);
+        display.textContent += calculator.numberClicks1.slice(-1).join('');
+        console.log()
+    }
+    else {
+        calculator.numberClicks2.push(this.id);
+        display.textContent += calculator.numberClicks2.slice(-1).join('');
+    }
+}
+
+function operatorClick() {
+    //ignore operator if no numbers pressed first
+    if (calculator.numberClicks1.length == 0) {return}
+    //update operator if two operators pressed in a row
+    if (calculator.operator != '' && calculator.numberClicks2.length == 0) {
+        calculator.operator = this.id;
+        let disp = display.textContent;
+        let oldOperator = disp.charAt(disp.length-2);
+        display.textContent = disp.replace(oldOperator, this.id);
+    }
+    //if operator pressed while full expression already present: operate on numbers and then add selected operator
+    else if (calculator.numberClicks2.length != 0) {
+        operate();
+        calculator.operator = this.id;
+        calculator.numberClicks1 = calculator.numberClicks1.join('');
+        display.textContent += ` ${calculator.operator[0]} `;
+        //if operator clicked after operation result displayed, notifies that starting new operation
+        result = false;
+    }
+    //update operator as normal: when pressed after number button
+    else {
+        calculator.operator = this.id;
+        calculator.numberClicks1 = calculator.numberClicks1.join('');
+        display.textContent += ` ${calculator.operator[0]} `;
+        //if operator clicked after operation result displayed, notifies that starting new operation
+        result = false;
+    };
+}
+
+function operate() {
+    if (calculator.numberClicks1.length == 0 || calculator.numberClicks2.length == 0
+        || calculator.operator.length == 0) {return}
+    calculator.numberClicks2 = calculator.numberClicks2.join('');
+    let number1 = Number(calculator.numberClicks1);
+    let number2 = Number(calculator.numberClicks2);
+    let operator = calculator.operator;
+    if (operator == '+') {add(number1, number2)}
+    else if (operator == '-') {subtract(number1, number2)}
+    else if (operator == '*') {multiply(number1, number2)}
+    else if (operator == '/') {divide(number1, number2)}
+}
+
+function add (a, b) {
+	let sum = a + b;
+    sum = Math.round(sum * 100) / 100;
+    display.textContent = sum;
+    calculator.numberClicks1 = [sum];
+    calculator.numberClicks2 = [];
+    calculator.operator = [];
+    result = true;
+}
+
+function subtract (a, b) {
+	let difference = a - b;
+    difference = Math.round(difference * 100) / 100;
+    display.textContent = difference;
+    calculator.numberClicks1 = [difference];
+    calculator.numberClicks2 = [];
+    calculator.operator = [];
+    result = true;
+}
+
+function multiply (a, b) {
+    let product = a * b;
+    product = Math.round(product * 100) / 100;
+    display.textContent = product;
+    calculator.numberClicks1 = [product];
+    calculator.numberClicks2 = [];
+    calculator.operator = [];
+    result = true;
+}
+
+function divide (a, b) {
+    if (b == 0) {
+        display.textContent = 'infinity'
+        calculator.numberClicks1 = [];
+    }
+    else {
+        let quotient = a / b;
+        quotient = Math.round(quotient * 100) / 100;
+        display.textContent = quotient;
+        calculator.numberClicks1 = [quotient];
+    }
+    calculator.numberClicks2 = [];
+    calculator.operator = [];
+    result = true;
+}
+
+function clear() {
+    display.textContent = '';
+    calculator.numberClicks1 = [];
+    calculator.numberClicks2 = [];
+    calculator.operator = [];
+}
+
+let numberButtons = document.querySelectorAll('.numberButton');
+numberButtons.forEach(numberButton => {
+    numberButton.addEventListener('click', numberClick);
+});
+
+let operatorButtons = document.querySelectorAll('.operatorButton');
+operatorButtons.forEach(operatorButton => {
+    operatorButton.addEventListener('click', operatorClick);
+})
+
+let equalsButton = document.querySelector('.equalsButton');
+equalsButton.addEventListener('click', operate);
+
+let clearButton = document.querySelector('.clearButton');
+clearButton.addEventListener('click', clear);
+
+/*let buttons = document.querySelectorAll('.buttons>button');
+buttons.forEach(button => {
+    button.addEventListener('mousedown', () => button.classList.add('buttonClick'));
+    button.addEventListener('mouseup', () => button.classList.remove('buttonClick'));
+});*/
+
+
+</script>
+</body>
+
+</html>
